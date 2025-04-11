@@ -141,9 +141,11 @@ void main(void) {
 	for ( ;; ) {
 		sleep_ms(20);
 		bt_hid_get_latest(&state);
+		
 		printf("buttons: %04x, l: %d,%d, r: %d,%d, l2,r2: %d,%d hat: %d\n",
 				state.buttons, state.lx, state.ly, state.rx, state.ry,
 				state.l2, state.r2, state.hat);
+		
 
 		float speed_scale = 1.0;
 		int8_t linear = clamp8(-(state.ly - 128) * speed_scale);

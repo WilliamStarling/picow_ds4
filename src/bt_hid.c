@@ -63,7 +63,13 @@
 // Knockoff DS4
 //static const char * remote_addr_string = "A5:15:66:8E:91:3B";
 // Brian C Knockoff DS4
-static const char * remote_addr_string = "8C:41:F2:D0:32:43";
+//static const char * remote_addr_string = "8C:41:F2:D0:32:43";
+//William Switch Pro Controller
+//static const char * remote_addr_string = "60:6B:FF:18:73:BC";
+// William PS5 Controller
+//static const char * remote_addr_string = "10:18:49:14:BF:C7";
+// William knockoff PS4 controller
+static const char * remote_addr_string = "89:38:38:07:44:9C";
 
 static bd_addr_t remote_addr;
 static bd_addr_t connected_addr;
@@ -74,7 +80,8 @@ static uint8_t hid_descriptor_storage[MAX_ATTRIBUTE_VALUE_SIZE];
 
 static uint16_t hid_host_cid = 0;
 static bool     hid_host_descriptor_available = false;
-static hid_protocol_mode_t hid_host_report_mode = HID_PROTOCOL_MODE_REPORT;
+//static hid_protocol_mode_t hid_host_report_mode = HID_PROTOCOL_MODE_REPORT; //report mode
+static hid_protocol_mode_t hid_host_report_mode = HID_PROTOCOL_MODE_BOOT; //boot mode. one of these might work. oh my gosh it actually worked
 
 static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
 
@@ -133,16 +140,25 @@ struct __attribute__((packed)) input_report_17 {
 static void hid_host_handle_interrupt_report(const uint8_t *packet, uint16_t packet_len){
 	static struct bt_hid_state last_state = { 0 };
 
+	//printf_hexdump(packet, packet_len);
+
+	/*
+	//apparently way too small, it wants a size of at least 37 but this is 10.
 	// Only interested in report_id 0x11
 	if (packet_len < sizeof(struct input_report_17) + 1) {
+		printf("Packet too small: %d\n", packet_len);
+		printf("Expected at least %zu\n", sizeof(struct input_report_17) + 1);
 		return;
 	}
+	*/
 
+	/*
+	//I don't understand this one- sas packet[0] is a1 and packet1] is 01. I guess packet 2 needs to be 11 instead of 01 for some reason?
 	if ((packet[0] != 0xa1) || (packet[1] != 0x11)) {
+		printf("Invalid packet: %02x %02x\n", packet[0], packet[1]);
 		return;
 	}
-
-	//printf_hexdump(packet, packet_len);
+	*/
 
 	struct input_report_17 *report = (struct input_report_17 *)&packet[1];
 
@@ -197,6 +213,7 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
 	if (packet_type != HCI_EVENT_PACKET) {
 		return;
 	}
+
 
 	event = hci_event_packet_get_type(packet);
 	switch (event) {
@@ -270,8 +287,10 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
 			if (hid_host_descriptor_available){
 				hid_host_handle_interrupt_report(hid_subevent_report_get_report(packet), hid_subevent_report_get_report_len(packet));
 			} else {
-				printf("No hid host descriptor available\n");
-				printf_hexdump(hid_subevent_report_get_report(packet), hid_subevent_report_get_report_len(packet));
+				//these are clogging the output.
+				//printf("No hid host descriptor available\n");
+				//printf_hexdump(hid_subevent_report_get_report(packet), hid_subevent_report_get_report_len(packet));
+				hid_host_handle_interrupt_report(hid_subevent_report_get_report(packet), hid_subevent_report_get_report_len(packet));
 			}
 			break;
 		case HID_SUBEVENT_SET_PROTOCOL_RESPONSE:
