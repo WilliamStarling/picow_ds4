@@ -1,4 +1,8 @@
 /*
+
+Hi, William here. I copied the bt_hid.c code, and made slight alterations so it would act as a bluetooth scanner.
+I was using this to debug the contoller not connecting, and you shouldn't have to worry about this file.
+
  * Derived from the btstack hid_host_demo:
  * Copyright (C) 2017 BlueKitchen GmbH
  *
