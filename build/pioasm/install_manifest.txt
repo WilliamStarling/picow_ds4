@@ -1,0 +1,5 @@
+I:/projects/Robotics/Pico2W/picow_ds4/build/pioasm-install/pioasm/pioasm.exe
+I:/projects/Robotics/Pico2W/picow_ds4/build/pioasm-install/pioasm/pioasmTargets.cmake
+I:/projects/Robotics/Pico2W/picow_ds4/build/pioasm-install/pioasm/pioasmTargets-debug.cmake
+I:/projects/Robotics/Pico2W/picow_ds4/build/pioasm-install/pioasm/pioasmConfig.cmake
+I:/projects/Robotics/Pico2W/picow_ds4/build/pioasm-install/pioasm/pioasmConfigVersion.cmake

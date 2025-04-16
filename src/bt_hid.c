@@ -63,7 +63,13 @@
 // Knockoff DS4
 //static const char * remote_addr_string = "A5:15:66:8E:91:3B";
 // Brian C Knockoff DS4
-static const char * remote_addr_string = "8C:41:F2:D0:32:43";
+//static const char * remote_addr_string = "8C:41:F2:D0:32:43";
+//William Switch Pro Controller
+//static const char * remote_addr_string = "60:6B:FF:18:73:BC";
+// William PS5 Controller
+//static const char * remote_addr_string = "10:18:49:14:BF:C7";
+// William knockoff PS4 controller
+static const char * remote_addr_string = "89:38:38:07:44:9C";
 
 static bd_addr_t remote_addr;
 static bd_addr_t connected_addr;
@@ -74,7 +80,8 @@ static uint8_t hid_descriptor_storage[MAX_ATTRIBUTE_VALUE_SIZE];
 
 static uint16_t hid_host_cid = 0;
 static bool     hid_host_descriptor_available = false;
-static hid_protocol_mode_t hid_host_report_mode = HID_PROTOCOL_MODE_REPORT;
+//static hid_protocol_mode_t hid_host_report_mode = HID_PROTOCOL_MODE_REPORT; //report mode
+static hid_protocol_mode_t hid_host_report_mode = HID_PROTOCOL_MODE_BOOT; //boot mode. one of these might work. oh my gosh it actually worked
 
 static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
 
@@ -101,18 +108,21 @@ static void hid_host_setup(void){
 
 const struct bt_hid_state default_state = {
 	.buttons = 0,
+	.triggers = 0,
 	.lx = 0x80,
 	.ly = 0x80,
 	.rx = 0x80,
 	.ry = 0x80,
-	.l2 = 0x80,
-	.r2 = 0x80,
-	.hat = 0x8,
+	//.l2 = 0x80,
+	//.r2 = 0x80,
+	//.hat = 0x8,
 };
 
 struct bt_hid_state latest;
 
 struct __attribute__((packed)) input_report_17 {
+	/*
+	//replacing the old code with my new report that uses 8 bytes.
 	uint8_t report_id;
 	uint8_t pad[2];
 
@@ -128,21 +138,53 @@ struct __attribute__((packed)) input_report_17 {
 	uint8_t pad2[5];
 	uint8_t status[2];
 	uint8_t pad3;
+	*/
+	//uint8_t report_id;
+	uint8_t pad;
+	uint8_t lx, ly;
+	uint8_t rx, ry;
+	uint8_t buttons;
+	uint8_t triggers;
+	uint8_t others[2];
 };
 
 static void hid_host_handle_interrupt_report(const uint8_t *packet, uint16_t packet_len){
 	static struct bt_hid_state last_state = { 0 };
 
+	//printf_hexdump(packet, packet_len);
+	/*
+	1-2 bytes don't change, I beleive are used for the report type.
+	3rd byte is left joystick, side to side
+		default value is 0x80
+	4th byte is left joystick, up and down
+		default value is 0x80
+	5th byte is right joystick, side to side
+		default value is 0x80
+	6th byte is right joystick, up and down
+		default value is 0x80
+	7th byte is the 4 face buttons and dpad. and also the left underneath buttons.
+	   default value is 0x08
+	8th byte is the triggers and bumper buttons. also, the left trigger also affects the 10th byte. but not the 9th... 
+	It's also the select and start buttons.
+	*/
+
+	/*
+	//apparently way too small, it wants a size of at least 37 but this is 10.
 	// Only interested in report_id 0x11
 	if (packet_len < sizeof(struct input_report_17) + 1) {
+		printf("Packet too small: %d\n", packet_len);
+		printf("Expected at least %zu\n", sizeof(struct input_report_17) + 1);
 		return;
 	}
+	*/
 
+	/*
+	//I don't understand this one- sas packet[0] is a1 and packet1] is 01. I guess packet 2 needs to be 11 instead of 01 for some reason?
 	if ((packet[0] != 0xa1) || (packet[1] != 0x11)) {
+		printf("Invalid packet: %02x %02x\n", packet[0], packet[1]);
 		return;
 	}
-
-	//printf_hexdump(packet, packet_len);
+	*/
 
 	struct input_report_17 *report = (struct input_report_17 *)&packet[1];
 
@@ -150,16 +192,18 @@ static void hid_host_handle_interrupt_report(const uint8_t *packet, uint16_t pac
 	// single-threaded-ness
 	latest = (struct bt_hid_state){
 		// Somewhat arbitrary packing of the buttons into a single 16-bit word
-		.buttons = ((report->buttons[0] & 0xf0) << 8) | ((report->buttons[2] & 0x3) << 8) | (report->buttons[1]),
+		//.buttons = ((report->buttons[0] & 0xf0) << 8) | ((report->buttons[2] & 0x3) << 8) | (report->buttons[1]),
+		.buttons = report->buttons,
+		.triggers = report->triggers,
 
 		.lx = report->lx,
 		.ly = report->ly,
 		.rx = report->rx,
 		.ry = report->ry,
-		.l2 = report->l2,
-		.r2 = report->r2,
+		//.l2 = report->l2,
+		//.r2 = report->r2,
 
-		.hat = (report->buttons[0] & 0xf),
+		//.hat = (report->buttons[0] & 0xf),
 	};
 
 	// TODO: Parse out battery, touchpad, sixaxis, timestamp, temperature(?!)
@@ -197,6 +241,7 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
 	if (packet_type != HCI_EVENT_PACKET) {
 		return;
 	}
+
 
 	event = hci_event_packet_get_type(packet);
 	switch (event) {
@@ -270,8 +315,18 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
 			if (hid_host_descriptor_available){
 				hid_host_handle_interrupt_report(hid_subevent_report_get_report(packet), hid_subevent_report_get_report_len(packet));
 			} else {
-				printf("No hid host descriptor available\n");
-				printf_hexdump(hid_subevent_report_get_report(packet), hid_subevent_report_get_report_len(packet));
+				//these are clogging the output.
+				//printf("No hid host descriptor available\n");
+				//printf_hexdump(hid_subevent_report_get_report(packet), hid_subevent_report_get_report_len(packet));
+				/* 
+				//prints out the entire packet, but the first 7 bytes I beleive are related to protocol headers.
+				printf("Raw Report (%u bytes): ", size);
+				for (int i = 0; i < size; i++) {
+					printf("%02X ", packet[i]);
+				}
+				printf("\n");
+				*/
+				hid_host_handle_interrupt_report(hid_subevent_report_get_report(packet), hid_subevent_report_get_report_len(packet));
 			}
 			break;
 		case HID_SUBEVENT_SET_PROTOCOL_RESPONSE:

@@ -6,6 +6,7 @@
 void bt_main(void);
 
 struct bt_hid_state {
+	/*
 	uint16_t buttons;
 	uint8_t lx;
 	uint8_t ly;
@@ -15,6 +16,13 @@ struct bt_hid_state {
 	uint8_t r2;
 	uint8_t hat;
 	uint8_t pad;
+	*/
+	uint8_t buttons;
+	uint8_t triggers;
+	uint8_t lx;
+	uint8_t ly;
+	uint8_t rx;
+	uint8_t ry;
 };
 
 // Get the latest controller state
