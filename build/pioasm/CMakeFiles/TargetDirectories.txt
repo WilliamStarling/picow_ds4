@@ -1,6 +1,0 @@
-I:/projects/Robotics/Pico2W/picow_ds4/build/pioasm/CMakeFiles/pioasm.dir
-I:/projects/Robotics/Pico2W/picow_ds4/build/pioasm/CMakeFiles/edit_cache.dir
-I:/projects/Robotics/Pico2W/picow_ds4/build/pioasm/CMakeFiles/rebuild_cache.dir
-I:/projects/Robotics/Pico2W/picow_ds4/build/pioasm/CMakeFiles/list_install_components.dir
-I:/projects/Robotics/Pico2W/picow_ds4/build/pioasm/CMakeFiles/install.dir
-I:/projects/Robotics/Pico2W/picow_ds4/build/pioasm/CMakeFiles/install/local.dir
