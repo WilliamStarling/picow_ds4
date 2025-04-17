@@ -1,5 +1,0 @@
-I:/projects/Robotics/Pico2W/picow_ds4/build/_deps/picotool/picotool.exe
-I:/projects/Robotics/Pico2W/picow_ds4/build/_deps/picotool/picotoolTargets.cmake
-I:/projects/Robotics/Pico2W/picow_ds4/build/_deps/picotool/picotoolTargets-debug.cmake
-I:/projects/Robotics/Pico2W/picow_ds4/build/_deps/picotool/picotoolConfig.cmake
-I:/projects/Robotics/Pico2W/picow_ds4/build/_deps/picotool/picotoolConfigVersion.cmake
