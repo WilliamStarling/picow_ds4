@@ -16,6 +16,8 @@
 #define PWM_MIN 80
 #define PWM_MAX (PWM_MIN + 127)
 
+//const uint LED_PIN = 13; //for blinking an led.
+
 //Some of the triggers will rapidly switch between 1 and 0 when pressed,
 //So making these to keep track of how long they've been released for.
 //To make sure they're really off.
@@ -241,12 +243,14 @@ switch (buttons) {
 	{
 		//Code for if Square / X button is pressed
 		printf("Square pressed\n");
+		//gpio_put(LED_PIN, 1); //turns the led on when pressed
 	}
 	else if(square_state == BUTTON_RELEASED)
 	{
 		//Code for if Square / X button is released	
 		//Stop doing whatever it square made it do.
 		printf("Square released\n");
+		//gpio_put(LED_PIN, 0); turns the led off when released
 	}
 
 	ex_state = buttonDebouncer(buttons & (1 << 5), &buttonsStatus->ex); //EX BUTTON
@@ -399,13 +403,17 @@ void main(void) {
 	sleep_ms(1000);
 	printf("Hello\n");
 
+	//test code for blinking an LED. happens in the square button, with gpio pin 13.
+	//gpio_init(LED_PIN);
+	//gpio_set_dir(LED_PIN, GPIO_OUT);
+	
 	multicore_launch_core1(bt_main);
 	// Wait for init (should do a handshake with the fifo here?)
 	sleep_ms(1000);
 	
 	struct bt_hid_state state;
 	struct buttonStatus buttonsStatus = { 0 };
-	for ( ;; ) {
+	for ( ;; ) {https://docs.google.com/document/d/1Wt3UV09HwD1t7vMnimtrmzCTw2O6JCgw0TMRz4ddzdU/edit?usp=sharing
 		sleep_ms(20);
 		bt_hid_get_latest(&state);
 
